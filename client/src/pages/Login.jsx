@@ -26,8 +26,6 @@ export default function Login() {
     }
   };
 
-  const quick = (id, pw) => { setIdentifier(id); setPassword(pw); };
-
   return (
     <div className="grid min-h-screen place-items-center bg-ink-900 px-4">
       <div className="w-full max-w-sm">
@@ -49,15 +47,6 @@ export default function Login() {
           </div>
           <button className="btn btn-primary w-full" disabled={busy}>{busy ? 'Entrando...' : 'Entrar'}</button>
         </form>
-
-        <div className="mt-4 rounded-lg border border-ink-600 bg-ink-800 p-3 text-xs text-gray-400">
-          <div className="mb-2 font-medium text-gray-300">Accesos de prueba (click para rellenar):</div>
-          <div className="space-y-1">
-            <button onClick={() => quick('admin', 'admin123')} className="block w-full text-left hover:text-brand-400">👑 admin / admin123</button>
-            <button onClick={() => quick('salvador', 'manager123')} className="block w-full text-left hover:text-brand-400">🧭 salvador / manager123 (manager)</button>
-            <button onClick={() => quick('giovanni', 'chatter123')} className="block w-full text-left hover:text-brand-400">💬 giovanni / chatter123 (chatter)</button>
-          </div>
-        </div>
       </div>
     </div>
   );
