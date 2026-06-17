@@ -9,10 +9,12 @@ services:
     plan: free
     # Build: instala todo, usa el esquema Postgres, compila el frontend,
     # genera el cliente Prisma y crea las tablas en Neon.
+    # --include=dev: NODE_ENV=production hace que npm omita devDependencies;
+    # las forzamos porque vite (build del frontend) y prisma son devDependencies.
     buildCommand: >-
-      npm install &&
-      npm --prefix server install &&
-      npm --prefix client install &&
+      npm install --include=dev &&
+      npm --prefix server install --include=dev &&
+      npm --prefix client install --include=dev &&
       cp server/prisma/schema.postgres.prisma server/prisma/schema.prisma &&
       npm --prefix server run db:generate &&
       npm --prefix server run db:push &&
