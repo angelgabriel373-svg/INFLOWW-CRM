@@ -9,14 +9,19 @@ const { setupSocket } = require('./socket');
 const app = express();
 const server = http.createServer(app);
 
-const CLIENT_URL = process.env.CLIENT_URL || 'http://localhost:5173';
+// En desarrollo se usa CLIENT_URL (http://localhost:5173).
+// En produccion, si no se define, se refleja el origen de la peticion
+// (el frontend se sirve desde el mismo dominio), asi el chat funciona sin
+// tener que saber la URL del servidor de antemano.
+const CLIENT_URL = process.env.CLIENT_URL;
+const corsOrigin = CLIENT_URL ? CLIENT_URL : true;
 const PORT = process.env.PORT || 4000;
 
-const io = new Server(server, { cors: { origin: CLIENT_URL, methods: ['GET', 'POST'] } });
+const io = new Server(server, { cors: { origin: corsOrigin, methods: ['GET', 'POST'], credentials: true } });
 app.set('io', io);
 setupSocket(io);
 
-app.use(cors({ origin: CLIENT_URL }));
+app.use(cors({ origin: corsOrigin }));
 app.use(express.json({ limit: '5mb' }));
 
 // Archivos subidos
@@ -51,6 +56,6 @@ app.use((err, req, res, next) => {
 });
 
 server.listen(PORT, () => {
-  console.log(`\n🚀 API + WebSocket en http://localhost:${PORT}`);
-  console.log(`   Frontend permitido desde: ${CLIENT_URL}`);
+  console.log(`\n🚀 API + WebSocket en puerto ${PORT}`);
+  console.log(`   CORS: ${CLIENT_URL || 'cualquier origen (mismo dominio)'}`);
 });

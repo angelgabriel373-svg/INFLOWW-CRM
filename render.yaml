@@ -29,8 +29,6 @@ services:
         generateValue: true        # Render genera un secreto seguro automaticamente
       - key: DATABASE_URL
         sync: false                # La pegas tu (cadena de Neon)
-      - key: CLIENT_URL
-        sync: false                # La URL publica de tu app en Render (https://ofm-crm.onrender.com)
       - key: ADMIN_PASSWORD
         sync: false                # Tu contrasena de admin (ponla fuerte)
       - key: JUKI_PASSWORD
