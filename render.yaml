@@ -1,0 +1,37 @@
+# Despliegue gratis en Render (https://render.com) — un solo servicio web.
+# Render lee este archivo automaticamente al crear un "Blueprint".
+# La base de datos NO va aqui: se usa Neon (Postgres gratis) y se pega su
+# cadena de conexion en la variable DATABASE_URL del dashboard de Render.
+services:
+  - type: web
+    name: ofm-crm
+    runtime: node
+    plan: free
+    # Build: instala todo, usa el esquema Postgres, compila el frontend,
+    # genera el cliente Prisma y crea las tablas en Neon.
+    buildCommand: >-
+      npm install &&
+      npm --prefix server install &&
+      npm --prefix client install &&
+      cp server/prisma/schema.postgres.prisma server/prisma/schema.prisma &&
+      npm --prefix server run db:generate &&
+      npm --prefix server run db:push &&
+      npm --prefix client run build
+    # Start: siembra solo si la BD esta vacia y arranca el servidor.
+    startCommand: >-
+      node server/prisma/seed-if-empty.js &&
+      node server/src/index.js
+    healthCheckPath: /api/health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: JWT_SECRET
+        generateValue: true        # Render genera un secreto seguro automaticamente
+      - key: DATABASE_URL
+        sync: false                # La pegas tu (cadena de Neon)
+      - key: CLIENT_URL
+        sync: false                # La URL publica de tu app en Render (https://ofm-crm.onrender.com)
+      - key: ADMIN_PASSWORD
+        sync: false                # Tu contrasena de admin (ponla fuerte)
+      - key: JUKI_PASSWORD
+        sync: false                # Contrasena de Juki

@@ -1,0 +1,21 @@
+# Despliegue con un solo comando:  docker compose up --build
+# La app queda disponible en http://localhost:4000 (frontend + API + websockets)
+services:
+  app:
+    build: .
+    ports:
+      - "4000:4000"
+    environment:
+      - PORT=4000
+      - NODE_ENV=production
+      - DATABASE_URL=file:/data/dev.db
+      - JWT_SECRET=cambia-esto-por-un-secreto-largo-en-produccion
+      - CLIENT_URL=http://localhost:4000
+    volumes:
+      - crm_data:/data        # persiste la base de datos SQLite
+      - crm_uploads:/app/server/uploads  # persiste imagenes subidas
+    restart: unless-stopped
+
+volumes:
+  crm_data:
+  crm_uploads:

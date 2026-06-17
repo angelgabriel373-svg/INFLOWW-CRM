@@ -1,0 +1,145 @@
+// Esquema de la base de datos del CRM (Infloww clone)
+// Por defecto SQLite (coste cero, sin servidor). Para PostgreSQL ver README.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// SQLite no soporta enums nativos en Prisma; usamos String con valores controlados:
+//   Role: ADMIN | MANAGER | CHATTER
+//   SenderType: FAN | MODEL
+//   ConversationStatus: ACTIVE | ARCHIVED | FLAGGED
+//   TicketStatus: OPEN | IN_PROGRESS | CLOSED
+
+model User {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  username     String   @unique
+  password     String
+  name         String
+  role         String   @default("CHATTER")
+  active       Boolean  @default(true)
+  shiftStart   String?  // "20:00"
+  shiftEnd     String?  // "04:00"
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  assignments    ModelAssignment[]
+  sentMessages   Message[]         @relation("SentByUser")
+  workSessions   WorkSession[]
+  ticketsCreated Ticket[]          @relation("TicketCreator")
+}
+
+model Model {
+  id          String   @id @default(cuid())
+  name        String
+  alias       String?
+  description String?
+  avatarUrl   String?
+  socials     String?  // JSON: {"instagram":"...","onlyfans":"...","telegram":"..."}
+  subPrice    Float    @default(0)
+  active      Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  assignments   ModelAssignment[]
+  fans          Fan[]
+  conversations Conversation[]
+  scripts       Script[]
+}
+
+// Relacion N:M chatters <-> modelos
+model ModelAssignment {
+  id        String   @id @default(cuid())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId    String
+  model     Model    @relation(fields: [modelId], references: [id], onDelete: Cascade)
+  modelId   String
+  createdAt DateTime @default(now())
+
+  @@unique([userId, modelId])
+}
+
+model Fan {
+  id         String   @id @default(cuid())
+  model      Model    @relation(fields: [modelId], references: [id], onDelete: Cascade)
+  modelId    String
+  username   String
+  name       String?
+  avatarUrl  String?
+  notes      String?
+  totalSpent Float    @default(0)
+  createdAt  DateTime @default(now())
+
+  conversations Conversation[]
+}
+
+model Conversation {
+  id            String             @id @default(cuid())
+  model         Model              @relation(fields: [modelId], references: [id], onDelete: Cascade)
+  modelId       String
+  fan           Fan                @relation(fields: [fanId], references: [id], onDelete: Cascade)
+  fanId         String
+  status        String             @default("ACTIVE")
+  lastMessageAt DateTime           @default(now())
+  unreadCount   Int                @default(0)
+  createdAt     DateTime           @default(now())
+
+  messages Message[]
+
+  @@index([modelId])
+}
+
+model Message {
+  id             String     @id @default(cuid())
+  conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  conversationId String
+  senderType     String     // FAN | MODEL
+  body           String
+  attachmentUrl  String?
+  isPpv          Boolean    @default(false)
+  price          Float      @default(0)
+  purchased      Boolean    @default(false)
+  // Que trabajador la envio (solo en mensajes de la MODELO escritos por un chatter)
+  sentByUser     User?      @relation("SentByUser", fields: [sentByUserId], references: [id], onDelete: SetNull)
+  sentByUserId   String?
+  scheduledFor   DateTime?
+  createdAt      DateTime   @default(now())
+
+  @@index([conversationId])
+}
+
+model Script {
+  id        String   @id @default(cuid())
+  model     Model?   @relation(fields: [modelId], references: [id], onDelete: Cascade)
+  modelId   String?
+  title     String
+  body      String
+  category  String   @default("general")
+  createdAt DateTime @default(now())
+}
+
+// Control de horarios / sesiones de chat de los trabajadores
+model WorkSession {
+  id        String    @id @default(cuid())
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId    String
+  startedAt DateTime  @default(now())
+  endedAt   DateTime?
+}
+
+model Ticket {
+  id          String       @id @default(cuid())
+  title       String
+  body        String
+  status      String       @default("OPEN")
+  createdBy   User         @relation("TicketCreator", fields: [createdById], references: [id], onDelete: Cascade)
+  createdById String
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+}

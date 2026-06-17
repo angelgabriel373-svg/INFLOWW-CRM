@@ -1,0 +1,19 @@
+node_modules/
+dist/
+build/
+
+# Base de datos local y subidas
+server/dev.db
+server/dev.db-journal
+server/prisma/dev.db
+server/uploads/*
+!server/uploads/.gitkeep
+
+# Entorno
+.env
+*.local
+
+# Logs / SO
+*.log
+.DS_Store
+Thumbs.db
