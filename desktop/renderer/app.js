@@ -33,6 +33,7 @@ function showError(msg) {
 }
 
 async function login() {
+  console.log('[LOGIN] click');
   els.loginError.hidden = true;
   const identifier = els.username.value.trim();
   const password = els.password.value;
@@ -41,9 +42,12 @@ async function login() {
   els.loginBtn.disabled = true;
   els.loginBtn.textContent = 'Entrando...';
   try {
+    console.log('[LOGIN] llamando a la API...');
     const r = await window.ofm.login(identifier, password);
+    console.log('[LOGIN] respuesta ok=' + r.ok + ' status=' + r.status);
     if (!r.ok) throw new Error((r.data && r.data.error) || 'Credenciales invalidas');
     const data = r.data;
+    if (!data || !data.token || !data.user) throw new Error('Respuesta inesperada del servidor');
 
     state.token = data.token;
     state.role = data.user.role;
@@ -56,8 +60,11 @@ async function login() {
     const nameEl = document.createElement('div'); nameEl.className = 'u-name'; nameEl.textContent = data.user.name;
     const roleEl = document.createElement('div'); roleEl.className = 'u-role'; roleEl.textContent = roleLabel(data.user.role);
     els.userBox.append(nameEl, roleEl);
+    console.log('[LOGIN] dentro, cargando modelos...');
     await loadModels();
+    console.log('[LOGIN] modelos cargados');
   } catch (e) {
+    console.log('[LOGIN] ERROR: ' + e.message);
     showError(e.message);
   } finally {
     els.loginBtn.disabled = false;

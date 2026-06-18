@@ -1,4 +1,6 @@
 * { box-sizing: border-box; margin: 0; padding: 0; }
+/* El atributo hidden debe ganar a las reglas de display de abajo. */
+[hidden] { display: none !important; }
 html, body { height: 100%; font-family: ui-sans-serif, system-ui, "Segoe UI", Roboto, sans-serif; background: #0b0e14; color: #e6e9ef; }
 
 /* --- Login --- */
