@@ -13,9 +13,10 @@ server/uploads/*
 .env
 *.local
 
-# Sesiones del conector de OnlyFans (NUNCA subir)
+# Sesiones y credenciales del conector de OnlyFans (NUNCA subir)
 connector/sessions/
 connector/node_modules/
+connector/credentials.local.json
 
 # Logs / SO
 *.log

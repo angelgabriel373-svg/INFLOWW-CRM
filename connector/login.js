@@ -31,9 +31,26 @@ function waitForEnter(msg) {
   const page = await context.newPage();
   await page.goto('https://onlyfans.com', { waitUntil: 'domcontentloaded' });
 
-  console.log('\n>>> Se ha abierto una ventana de OnlyFans.');
-  console.log('>>> Inicia sesion ahi con la cuenta de ' + account.toUpperCase() + ' (yo no veo nada).');
-  console.log('>>> Cuando veas tu feed/perfil ya dentro, vuelve a ESTA ventana negra y pulsa ENTER.\n');
+  // Rellena email y contrasena automaticamente si hay credenciales guardadas
+  const credsFile = path.join(__dirname, 'credentials.local.json');
+  if (fs.existsSync(credsFile)) {
+    try {
+      const creds = JSON.parse(fs.readFileSync(credsFile, 'utf8'))[account];
+      if (creds) {
+        await page.waitForTimeout(2500);
+        const emailSel = 'input[name="email"], input[type="email"]';
+        const passSel = 'input[name="password"], input[type="password"]';
+        await page.waitForSelector(emailSel, { timeout: 8000 }).catch(() => {});
+        await page.fill(emailSel, creds.email).catch(() => {});
+        await page.fill(passSel, creds.password).catch(() => {});
+        console.log('\n✅ Email y contrasena rellenados automaticamente.');
+      }
+    } catch {}
+  }
+
+  console.log('\n>>> Se ha abierto OnlyFans con el email y la contrasena ya puestos.');
+  console.log('>>> Solo dale al boton de LOGIN. Si pide un codigo, sacalo del Gmail de ' + account.toUpperCase() + ' y metelo.');
+  console.log('>>> Cuando veas el feed ya dentro, vuelve a ESTA ventana negra y pulsa ENTER.\n');
   await waitForEnter('   Pulsa ENTER cuando estes dentro de OnlyFans... ');
 
   await context.storageState({ path: sessionFile });
