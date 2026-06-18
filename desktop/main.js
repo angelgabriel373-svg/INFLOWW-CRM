@@ -61,27 +61,46 @@ ipcMain.handle('register-model', (_evt, { partition, isChatter }) => {
   return true;
 });
 
-// Llamadas a la API desde el proceso principal (sin CORS ni CSP que las bloqueen).
-ipcMain.handle('api-login', async (_evt, { identifier, password }) => {
+// Llamadas a la API desde el proceso principal (usa la pila de red de Electron;
+// sin CORS ni CSP). Timeout amplio porque el servidor gratis puede tardar en
+// "despertar" (~50s la primera vez).
+const { net } = require('electron');
+
+async function apiFetch(url, options = {}) {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), 70000);
   try {
-    const res = await fetch(`${API_URL}/api/auth/login`, {
+    const res = await net.fetch(url, { ...options, signal: controller.signal });
+    return res;
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
+ipcMain.handle('api-login', async (_evt, { identifier, password }) => {
+  console.log('api-login: intentando...');
+  try {
+    const res = await apiFetch(`${API_URL}/api/auth/login`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ identifier, password }),
     });
     const data = await res.json().catch(() => ({}));
+    console.log('api-login: respuesta', res.status);
     return { ok: res.ok, status: res.status, data };
   } catch (e) {
+    console.log('api-login: ERROR', e && e.message);
     return { ok: false, status: 0, data: { error: 'Sin conexion con el servidor. ' + (e.message || '') } };
   }
 });
 
 ipcMain.handle('api-models', async (_evt, token) => {
   try {
-    const res = await fetch(`${API_URL}/api/models`, { headers: { Authorization: `Bearer ${token}` } });
+    const res = await apiFetch(`${API_URL}/api/models`, { headers: { Authorization: `Bearer ${token}` } });
     const data = await res.json().catch(() => []);
     return { ok: res.ok, status: res.status, data };
   } catch (e) {
+    console.log('api-models: ERROR', e && e.message);
     return { ok: false, status: 0, data: [] };
   }
 });
