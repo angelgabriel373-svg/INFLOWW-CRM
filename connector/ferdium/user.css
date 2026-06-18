@@ -1,0 +1,15 @@
+/* Vista CHATTER de OnlyFans dentro de Ferdium: oculta todo lo de dinero. */
+
+/* Enlaces del menu hacia secciones de dinero / estadisticas */
+a[href*="/my/statistics"],
+a[href*="/my/statements"],
+a[href*="/my/payout"],
+a[href*="/my/banking"],
+a[href*="/my/earnings"],
+a[href*="/my/payments"],
+a[href*="/my/promotions"],
+a[href*="add-bank"],
+[data-name="Statistics"],
+[data-name="Statements"] {
+  display: none !important;
+}
