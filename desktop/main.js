@@ -125,6 +125,17 @@ app.whenReady().then(() => {
   });
 });
 
+// Guarda en disco las cookies/sesiones de OnlyFans para que NO se pierdan al
+// cerrar (asi Marta/Mara siguen logueadas la proxima vez, como en Ferdium).
+function flushSessions() {
+  for (const p of registeredPartitions) {
+    try { session.fromPartition(p).cookies.flushStore(); } catch (e) {}
+  }
+}
+setInterval(flushSessions, 8000);     // cada 8s mientras esta abierta
+app.on('before-quit', flushSessions); // y al cerrar
+
 app.on('window-all-closed', () => {
+  flushSessions();
   if (process.platform !== 'darwin') app.quit();
 });
