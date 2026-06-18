@@ -5,6 +5,9 @@ const { API_URL, BLOCK_PATTERNS } = require('./config');
 contextBridge.exposeInMainWorld('ofm', {
   apiUrl: API_URL,
   blockPatterns: BLOCK_PATTERNS,
+  // Login y modelos van por el proceso principal (sin CORS/CSP).
+  login: (identifier, password) => ipcRenderer.invoke('api-login', { identifier, password }),
+  getModels: (token) => ipcRenderer.invoke('api-models', token),
   // Registra la sesion de una modelo para activar el bloqueo antes de cargar su webview.
   registerModel: (partition, isChatter) => ipcRenderer.invoke('register-model', { partition, isChatter }),
 });

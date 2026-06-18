@@ -1,6 +1,6 @@
 const { app, BrowserWindow, session, ipcMain, shell } = require('electron');
 const path = require('path');
-const { BLOCK_PATTERNS } = require('./config');
+const { BLOCK_PATTERNS, API_URL } = require('./config');
 
 let mainWindow = null;
 const registeredPartitions = new Set();
@@ -35,12 +35,18 @@ function createWindow() {
       preload: path.join(__dirname, 'preload.js'),
       contextIsolation: true,
       nodeIntegration: false,
+      sandbox: false, // permite que el preload haga require('./config'); el renderer sigue sin Node
       webviewTag: true, // necesario para incrustar OnlyFans
     },
   });
 
   mainWindow.removeMenu();
   mainWindow.loadFile(path.join(__dirname, 'renderer', 'index.html'));
+
+  // Diagnostico: muestra errores del preload y de la pantalla en los registros.
+  mainWindow.webContents.on('preload-error', (_e, p, err) => console.log('PRELOAD-ERROR:', p, err && err.message));
+  mainWindow.webContents.on('console-message', (_e, _lvl, message, line, source) =>
+    console.log('RENDERER:', message, '(', source, ':', line, ')'));
 
   // Los enlaces externos (target=_blank) se abren en el navegador del sistema, no en ventanas sueltas.
   mainWindow.webContents.setWindowOpenHandler(({ url }) => {
@@ -53,6 +59,31 @@ function createWindow() {
 ipcMain.handle('register-model', (_evt, { partition, isChatter }) => {
   setupBlocking(partition, !!isChatter);
   return true;
+});
+
+// Llamadas a la API desde el proceso principal (sin CORS ni CSP que las bloqueen).
+ipcMain.handle('api-login', async (_evt, { identifier, password }) => {
+  try {
+    const res = await fetch(`${API_URL}/api/auth/login`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ identifier, password }),
+    });
+    const data = await res.json().catch(() => ({}));
+    return { ok: res.ok, status: res.status, data };
+  } catch (e) {
+    return { ok: false, status: 0, data: { error: 'Sin conexion con el servidor. ' + (e.message || '') } };
+  }
+});
+
+ipcMain.handle('api-models', async (_evt, token) => {
+  try {
+    const res = await fetch(`${API_URL}/api/models`, { headers: { Authorization: `Bearer ${token}` } });
+    const data = await res.json().catch(() => []);
+    return { ok: res.ok, status: res.status, data };
+  } catch (e) {
+    return { ok: false, status: 0, data: [] };
+  }
 });
 
 // Endurece cada webview (contenido de terceros): popups al navegador del sistema

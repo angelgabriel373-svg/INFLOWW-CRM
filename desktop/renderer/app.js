@@ -41,13 +41,9 @@ async function login() {
   els.loginBtn.disabled = true;
   els.loginBtn.textContent = 'Entrando...';
   try {
-    const res = await fetch(`${api}/api/auth/login`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ identifier, password }),
-    });
-    const data = await res.json();
-    if (!res.ok) throw new Error(data.error || 'Credenciales invalidas');
+    const r = await window.ofm.login(identifier, password);
+    if (!r.ok) throw new Error((r.data && r.data.error) || 'Credenciales invalidas');
+    const data = r.data;
 
     state.token = data.token;
     state.role = data.user.role;
@@ -57,9 +53,9 @@ async function login() {
     els.app.hidden = false;
     // textContent (no innerHTML) para evitar inyeccion de HTML con el nombre.
     els.userBox.innerHTML = '';
-    const n = document.createElement('div'); n.className = 'u-name'; n.textContent = data.user.name;
-    const r = document.createElement('div'); r.className = 'u-role'; r.textContent = roleLabel(data.user.role);
-    els.userBox.append(n, r);
+    const nameEl = document.createElement('div'); nameEl.className = 'u-name'; nameEl.textContent = data.user.name;
+    const roleEl = document.createElement('div'); roleEl.className = 'u-role'; roleEl.textContent = roleLabel(data.user.role);
+    els.userBox.append(nameEl, roleEl);
     await loadModels();
   } catch (e) {
     showError(e.message);
@@ -74,12 +70,12 @@ function roleLabel(r) {
 }
 
 async function loadModels() {
-  const res = await fetch(`${api}/api/models`, { headers: { Authorization: `Bearer ${state.token}` } });
-  if (!res.ok) {
+  const r = await window.ofm.getModels(state.token);
+  if (!r.ok) {
     els.models.innerHTML = '<div class="no-models">Error cargando modelos (vuelve a entrar)</div>';
     return;
   }
-  const models = await res.json();
+  const models = r.data;
   els.models.innerHTML = '';
   if (!Array.isArray(models) || models.length === 0) {
     els.models.innerHTML = '<div class="no-models">Sin modelos asignadas</div>';
