@@ -14,6 +14,7 @@ const els = {
   logoutBtn: document.getElementById('logout-btn'),
   stage: document.getElementById('stage'),
   empty: document.getElementById('empty'),
+  navTop: document.getElementById('nav-top'),
 };
 
 let state = { token: null, role: null, name: null };
@@ -57,6 +58,18 @@ async function login() {
     const nameEl = document.createElement('div'); nameEl.className = 'u-name'; nameEl.textContent = data.user.name;
     const roleEl = document.createElement('div'); roleEl.className = 'u-role'; roleEl.textContent = roleLabel(data.user.role);
     els.userBox.append(nameEl, roleEl);
+
+    // Dashboard (gestion/estadisticas) cargado desde la nube — solo admin/manager.
+    // Asi las mejoras del dashboard llegan sin reenviar la app.
+    els.navTop.innerHTML = '';
+    if (state.role === 'ADMIN' || state.role === 'MANAGER') {
+      const dbtn = document.createElement('button');
+      dbtn.className = 'model-btn';
+      dbtn.textContent = '📊 Dashboard';
+      dbtn.onclick = () => openDashboard(dbtn);
+      els.navTop.appendChild(dbtn);
+    }
+
     await loadModels();
   } catch (e) {
     showError(e.message);
@@ -125,6 +138,33 @@ async function openModel(model, btn) {
     }
     els.stage.appendChild(wv);
     webviews.set(model.id, wv);
+  }
+  wv.style.display = 'flex';
+}
+
+// Abre el dashboard/estadisticas que vive en la nube (se actualiza sin reenviar la app).
+function openDashboard(btn) {
+  document.querySelectorAll('.model-btn').forEach((b) => b.classList.remove('active'));
+  btn.classList.add('active');
+  els.empty.hidden = true;
+  webviews.forEach((wv) => (wv.style.display = 'none'));
+
+  let wv = webviews.get('__dashboard__');
+  if (!wv) {
+    wv = document.createElement('webview');
+    wv.setAttribute('partition', 'persist:ofm-dashboard');
+    wv.setAttribute('src', `${api}/login`);
+    wv.setAttribute('allowpopups', 'false');
+    wv.className = 'ofweb';
+    const token = state.token;
+    // Inyecta el token para que el dashboard de la nube entre solo (sin pedir login otra vez).
+    wv.addEventListener('dom-ready', () => {
+      wv.executeJavaScript(
+        `localStorage.setItem('ofm_token', ${JSON.stringify(token)}); if (location.pathname.indexOf('/login') === 0) { location.replace('/'); }`
+      ).catch(() => {});
+    });
+    els.stage.appendChild(wv);
+    webviews.set('__dashboard__', wv);
   }
   wv.style.display = 'flex';
 }

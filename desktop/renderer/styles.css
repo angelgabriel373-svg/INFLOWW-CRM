@@ -28,6 +28,7 @@ html, body { height: 100%; font-family: ui-sans-serif, system-ui, "Segoe UI", Ro
 .model-btn:hover { background: #1d2433; }
 .model-btn.active { background: #6c47ff; color: #fff; border-color: #6c47ff; }
 .no-models { color: #8a93a6; font-size: 13px; padding: 8px; }
+.nav-sep { height: 1px; background: #1d2433; margin: 10px 4px; }
 .spacer { flex: 1; }
 .user-box { background: #161b27; border-radius: 10px; padding: 10px; margin-bottom: 10px; }
 .u-name { font-size: 14px; font-weight: 600; }

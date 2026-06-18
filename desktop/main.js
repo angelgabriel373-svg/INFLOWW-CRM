@@ -116,7 +116,9 @@ app.on('web-contents-created', (_e, contents) => {
     return { action: 'deny' };
   });
   contents.on('will-navigate', (evt, url) => {
-    if (!/^https:\/\/([a-z0-9-]+\.)?onlyfans\.com/i.test(url)) evt.preventDefault();
+    const okOnlyFans = /^https:\/\/([a-z0-9-]+\.)?onlyfans\.com/i.test(url);
+    const okDashboard = url.startsWith(API_URL); // el dashboard de la nube
+    if (!okOnlyFans && !okDashboard) evt.preventDefault();
   });
 });
 
