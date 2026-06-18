@@ -44,15 +44,24 @@ router.post('/onlyfans', checkKey, async (req, res) => {
       ? await prisma.conversation.update({ where: { id: conv.id }, data: { lastMessageAt: lastAt, unreadCount: c.unreadCount || 0 } })
       : await prisma.conversation.create({ data: { modelId: model.id, fanId: fan.id, lastMessageAt: lastAt, unreadCount: c.unreadCount || 0 } });
 
-    // Ultimo mensaje (v1: dejamos solo el ultimo como foto del estado actual)
-    if (c.lastMessageText) {
-      await prisma.message.deleteMany({ where: { conversationId: conv.id } });
+    // Historial completo: cada mensaje se inserta una sola vez (dedupe por extId de OnlyFans)
+    const msgs = Array.isArray(c.messages) && c.messages.length
+      ? c.messages
+      : (c.lastMessageText ? [{ extId: null, senderType: c.lastFromFan ? 'FAN' : 'MODEL', body: c.lastMessageText, createdAt: c.lastMessageAt }] : []);
+
+    for (const m of msgs) {
+      if (!m.body) continue;
+      if (m.extId) {
+        const exists = await prisma.message.findUnique({ where: { extId: String(m.extId) } });
+        if (exists) continue;
+      }
       await prisma.message.create({
         data: {
           conversationId: conv.id,
-          senderType: c.lastFromFan ? 'FAN' : 'MODEL',
-          body: c.lastMessageText,
-          createdAt: lastAt,
+          extId: m.extId ? String(m.extId) : null,
+          senderType: m.senderType === 'FAN' ? 'FAN' : 'MODEL',
+          body: m.body,
+          createdAt: m.createdAt ? new Date(m.createdAt) : new Date(),
         },
       });
     }
