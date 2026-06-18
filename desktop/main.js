@@ -2,6 +2,13 @@ const { app, BrowserWindow, session, ipcMain, shell } = require('electron');
 const path = require('path');
 const { BLOCK_PATTERNS, API_URL } = require('./config');
 
+// Modo PORTABLE: cuando esta empaquetada, guarda la sesion (logins de OnlyFans)
+// en una carpeta "data" junto al .exe. Asi, si copias/comprimes la carpeta de la
+// app, viaja CON las sesiones ya iniciadas (el chatter no tiene que loguear).
+if (app.isPackaged) {
+  app.setPath('userData', path.join(path.dirname(process.execPath), 'data'));
+}
+
 let mainWindow = null;
 const registeredPartitions = new Set();
 const chatterPartitions = new Set();
