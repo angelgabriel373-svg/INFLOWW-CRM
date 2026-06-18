@@ -43,10 +43,8 @@ function createWindow() {
   mainWindow.removeMenu();
   mainWindow.loadFile(path.join(__dirname, 'renderer', 'index.html'));
 
-  // Diagnostico: muestra errores del preload y de la pantalla en los registros.
-  mainWindow.webContents.on('preload-error', (_e, p, err) => console.log('PRELOAD-ERROR:', p, err && err.message));
-  mainWindow.webContents.on('console-message', (_e, _lvl, message, line, source) =>
-    console.log('RENDERER:', message, '(', source, ':', line, ')'));
+  // Registra errores criticos del preload por si hay que diagnosticar.
+  mainWindow.webContents.on('preload-error', (_e, p, err) => console.error('preload-error:', p, err && err.message));
 
   // Los enlaces externos (target=_blank) se abren en el navegador del sistema, no en ventanas sueltas.
   mainWindow.webContents.setWindowOpenHandler(({ url }) => {
@@ -78,7 +76,6 @@ async function apiFetch(url, options = {}) {
 }
 
 ipcMain.handle('api-login', async (_evt, { identifier, password }) => {
-  console.log('api-login: intentando...');
   try {
     const res = await apiFetch(`${API_URL}/api/auth/login`, {
       method: 'POST',
@@ -86,10 +83,8 @@ ipcMain.handle('api-login', async (_evt, { identifier, password }) => {
       body: JSON.stringify({ identifier, password }),
     });
     const data = await res.json().catch(() => ({}));
-    console.log('api-login: respuesta', res.status);
     return { ok: res.ok, status: res.status, data };
   } catch (e) {
-    console.log('api-login: ERROR', e && e.message);
     return { ok: false, status: 0, data: { error: 'Sin conexion con el servidor. ' + (e.message || '') } };
   }
 });

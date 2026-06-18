@@ -1,6 +1,7 @@
 node_modules/
 dist/
 build/
+desktop/dist/
 
 # Base de datos local y subidas
 server/dev.db
