@@ -1,0 +1,22 @@
+{
+  "name": "ofm-desktop",
+  "version": "1.0.0",
+  "private": true,
+  "description": "App de escritorio OFM: panel multi-OnlyFans con login de trabajadores y bloqueo de estadisticas.",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "build": "electron-builder",
+    "build:win": "electron-builder --win"
+  },
+  "devDependencies": {
+    "electron": "^33.2.0",
+    "electron-builder": "^25.1.8"
+  },
+  "build": {
+    "appId": "com.ofm.desktop",
+    "productName": "OFM Panel",
+    "files": ["main.js", "preload.js", "config.js", "renderer/**/*"],
+    "win": { "target": "nsis" }
+  }
+}

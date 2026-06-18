@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'self' 'unsafe-inline'; script-src 'self'; connect-src https://ofm-crm.onrender.com; img-src https: data:;" />
+  <title>OFM Panel</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <!-- Pantalla de login -->
+  <div id="login" class="login-screen">
+    <div class="login-card">
+      <div class="logo">O</div>
+      <h1>OFM Panel</h1>
+      <p class="sub">Gestion de chats — OnlyFans en un solo sitio</p>
+      <div id="login-error" class="error" hidden></div>
+      <input id="username" class="input" placeholder="Usuario" autocomplete="username" />
+      <input id="password" class="input" type="password" placeholder="Contraseña" autocomplete="current-password" />
+      <button id="login-btn" class="btn">Entrar</button>
+    </div>
+  </div>
+
+  <!-- App principal -->
+  <div id="app" class="app" hidden>
+    <aside class="sidebar">
+      <div class="brand"><div class="logo small">O</div><span>OFM</span></div>
+      <div id="models" class="models"></div>
+      <div class="spacer"></div>
+      <div id="user-box" class="user-box"></div>
+      <button id="logout-btn" class="btn ghost">Salir</button>
+    </aside>
+    <main id="stage" class="stage">
+      <div id="empty" class="empty">Selecciona una modelo para chatear</div>
+      <!-- las webviews de cada modelo se insertan aqui -->
+    </main>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
