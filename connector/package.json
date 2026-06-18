@@ -1,0 +1,13 @@
+{
+  "name": "ofm-crm-connector",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Puente entre OnlyFans y el CRM (lee y envia mensajes usando la sesion de la modelo).",
+  "scripts": {
+    "login": "node login.js",
+    "read": "node read-chats.js"
+  },
+  "dependencies": {
+    "playwright": "^1.48.0"
+  }
+}
