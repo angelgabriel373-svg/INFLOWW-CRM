@@ -38,6 +38,7 @@ app.use('/api/tickets', require('./routes/tickets'));
 app.use('/api/stats', require('./routes/stats'));
 app.use('/api/uploads', require('./routes/uploads'));
 app.use('/api/export', require('./routes/export'));
+app.use('/api/sync', require('./routes/sync'));
 
 app.get('/api/health', (req, res) => res.json({ ok: true, ts: Date.now() }));
 

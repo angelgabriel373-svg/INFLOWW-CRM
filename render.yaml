@@ -35,3 +35,5 @@ services:
         sync: false                # Tu contrasena de admin (ponla fuerte)
       - key: JUKI_PASSWORD
         sync: false                # Contrasena de Juki
+      - key: SYNC_API_KEY
+        sync: false                # Clave del puente OnlyFans->dashboard (la genera el conector)

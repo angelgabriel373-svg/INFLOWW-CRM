@@ -23,7 +23,8 @@ if (!fs.existsSync(sessionFile)) {
 }
 
 (async () => {
-  const browser = await chromium.launch({ headless: false });
+  // Usa el Edge instalado del sistema (el chromium descargado lo bloquea el antivirus)
+  const browser = await chromium.launch({ headless: false, channel: 'msedge' });
   const context = await browser.newContext({ storageState: sessionFile });
   const page = await context.newPage();
 
